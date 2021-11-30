@@ -1,11 +1,13 @@
 ---
 title: "Airbnb_1_1"
-author: "Guillem Llull"
+author: "Guillem Llull, Kelly"
 date: "25/11/2021"
 output: html_document
 ---
 
 #### *Abrimos los csv's para modificarlos, también generamos una copia del original para comprobar resultados*
+
+#### Prueba 2
 
 ```{r csv's Originales}
 Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
