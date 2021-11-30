@@ -7,7 +7,10 @@ output: html_document
 
 #### *Abrimos los csv's para modificarlos, también generamos una copia del original para comprobar resultados*
 
-#### Prueba 2
+```{r}
+sadmsÑdcas
+```
+
 
 ```{r csv's Originales}
 Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
