@@ -5,6 +5,8 @@ date: "25/11/2021"
 output: html_document
 ---
 
+#### *Abrimos los csv's para modificarlos, también generamos una copia del original para comprobar resultados*
+
 ```{r csv's Originales}
 Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
 Original_rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
