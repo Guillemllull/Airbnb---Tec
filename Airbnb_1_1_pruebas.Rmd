@@ -1,0 +1,247 @@
+---
+title: "Airbnb_1_1"
+author: "Guillem Llull"
+date: "25/11/2021"
+output: html_document
+---
+
+```{r csv's Originales}
+Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_MLL<-read.csv2("data/Mallorca/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_BCN<-read.csv2("data/Barcelona/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_BCN<- read.csv2("data/Barcelona/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_BCN<-read.csv2("data/Barcelona/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_VAL<-read.csv2("data/Valencia/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_VAL<- read.csv2("data/Valencia/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_VAL<-read.csv2("data/Valencia/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+```
+
+
+```{r csv Mallorca, eval=FALSE}
+
+calender_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_MLL<-read.csv2("data/Mallorca/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+# definimos como as.date la columna $date de los tres data frame
+
+calender_MLL$date<-as.Date(calender_MLL$date)
+rev_MLL$date<- as.Date(rev_MLL$date)
+list_MLL$last_review<- as.Date(list_MLL$last_review)
+list_MLL$last_scraped<- as.Date(list_MLL$last_scraped)
+list_MLL$host_since<- as.Date(list_MLL$host_since)
+list_MLL$calendar_last_scraped<- as.Date(list_MLL$calendar_last_scraped)
+list_MLL$first_review<- as.Date(list_MLL$first_review)
+
+# eliminamos los simbolos no alfa-numericos de las variables de precios y que incluyen porcentajes
+
+calender_MLL$price<-gsub("[[:punct:]]", " ",calender_MLL$price)
+calender_MLL$adjusted_price<- gsub("[[:punct:]]", " ", calender_MLL$adjusted_price)
+list_MLL$price<- gsub("[[:punct:]]", " ", list_MLL$price)
+list_MLL$host_response_rate<- gsub("[[:punct:]]", " ", list_MLL$host_response_rate)
+list_MLL$host_acceptance_rate<- gsub("[[:punct:]]", " ", list_MLL$host_acceptance_rate)
+# eliminamos los dos ultimos 0's de las variables de precios
+calender_MLL$price<- substr(calender_MLL$price,1,nchar(calender_MLL$price)-2)
+calender_MLL$adjusted_price<- substr(calender_MLL$adjusted_price,1,nchar(calender_MLL$adjusted_price)-2)
+list_MLL$price<- substr(list_MLL$price,1,nchar(list_MLL$price)-2)
+
+#ahora las pasamos de caracter a numericas
+calender_MLL$price<- as.numeric(calender_MLL$price) ############ CUIDADO : Warning: NAs introduced by coercion // pero a simple vista por lo general creo que bien ###########
+calender_MLL$adjusted_price<- as.numeric(calender_MLL$adjusted_price) ############ CUIDADO : Warning: NAs introduced by coercion
+list_MLL$price<- as.numeric(list_MLL$price)
+
+#cambiamos las variables definidas por "f" o "t" por "0" o "1"
+list_MLL$host_is_superhost<- gsub("f","0",list_MLL$host_is_superhost)
+list_MLL$host_is_superhost<- gsub("t","1",list_MLL$host_is_superhost)
+list_MLL$host_is_superhost<- as.numeric(list_MLL$host_is_superhost)
+
+list_MLL$instant_bookable<- gsub("f","0",list_MLL$instant_bookable)
+list_MLL$instant_bookable<- gsub("t","1",list_MLL$instant_bookable)
+list_MLL$instant_bookable<- as.numeric(list_MLL$instant_bookable)
+
+list_MLL$has_availability<- gsub("f","0",list_MLL$has_availability)
+list_MLL$has_availability<- gsub("t","1",list_MLL$has_availability)
+list_MLL$has_availability<- as.numeric(list_MLL$has_availability)
+
+list_MLL$host_identity_verified<- gsub("f","0",list_MLL$host_identity_verified)
+list_MLL$host_identity_verified<- gsub("t","1",list_MLL$host_identity_verified)
+list_MLL$host_identity_verified<- as.numeric(list_MLL$host_identity_verified)
+
+list_MLL$host_has_profile_pic<- gsub("f","0",list_MLL$host_has_profile_pic)
+list_MLL$host_has_profile_pic<- gsub("t","1",list_MLL$host_has_profile_pic)
+list_MLL$host_has_profile_pic<- as.numeric(list_MLL$host_has_profile_pic)
+
+calender_MLL$available<- gsub("f","0",calender_MLL$available)
+calender_MLL$available<- gsub("t","1",calender_MLL$available)
+calender_MLL$available<- as.numeric(calender_MLL$available)
+
+# elimino las variables "N A" por "" y despues defino estas variables que representan porcentajes como numéricas
+list_MLL$host_acceptance_rate<- gsub("N A", "", list_MLL$host_acceptance_rate)
+list_MLL$host_response_rate<- gsub("N A", "", list_MLL$host_response_rate)
+
+list_MLL$host_response_rate<- as.numeric(list_MLL$host_response_rate)
+list_MLL$host_acceptance_rate<- as.numeric(list_MLL$host_acceptance_rate)
+
+# Redefinimos la variable "1 bath" a 1
+list_MLL$bathrooms_text<-gsub("[[:alpha:]]", " ",list_MLL$bathrooms_text)
+list_MLL$bathrooms_text<-as.numeric(list_MLL$bathrooms_text)
+
+str(rev_MLL)
+str(list_MLL)
+str(calender_MLL)
+```
+
+```{r csv Barcelona, eval=FALSE}
+
+cal_BCN<-read.csv2("data/Barcelona/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_BCN<- read.csv2("data/Barcelona/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_BCN<-read.csv2("data/Barcelona/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+# definimos como as.date la columna $date de los tres data frame
+
+cal_BCN$date<-as.Date(cal_BCN$date)
+rev_BCN$date<- as.Date(rev_BCN$date)
+list_BCN$last_review<- as.Date(list_BCN$last_review)
+list_BCN$last_scraped<- as.Date(list_BCN$last_scraped)
+list_BCN$host_since<- as.Date(list_BCN$host_since)
+list_BCN$calendar_last_scraped<- as.Date(list_BCN$calendar_last_scraped)
+list_BCN$first_review<- as.Date(list_BCN$first_review)
+
+# eliminamos los simbolos no alfa-numericos de las variables de precios y que incluyen porcentajes
+
+cal_BCN$price<-gsub("[[:punct:]]", " ",cal_BCN$price)
+cal_BCN$adjusted_price<- gsub("[[:punct:]]", " ", cal_BCN$adjusted_price)
+list_BCN$price<- gsub("[[:punct:]]", " ", list_BCN$price)
+list_BCN$host_response_rate<- gsub("[[:punct:]]", " ", list_BCN$host_response_rate)
+list_BCN$host_acceptance_rate<- gsub("[[:punct:]]", " ", list_BCN$host_acceptance_rate)
+# eliminamos los dos ultimos 0's de las variables de precios
+cal_BCN$price<- substr(cal_BCN$price,1,nchar(cal_BCN$price)-2)
+cal_BCN$adjusted_price<- substr(cal_BCN$adjusted_price,1,nchar(cal_BCN$adjusted_price)-2)
+list_BCN$price<- substr(list_BCN$price,1,nchar(list_BCN$price)-2)
+
+#ahora las pasamos de caracter a numericas
+cal_BCN$price<- as.numeric(cal_BCN$price) ############ CUIDADO : Warning: NAs introduced by coercion // pero a simple vista por lo general creo que bien ###########
+cal_BCN$adjusted_price<- as.numeric(cal_BCN$adjusted_price) ############ CUIDADO : Warning: NAs introduced by coercion
+list_BCN$price<- as.numeric(list_BCN$price)
+
+#cambiamos las variables definidas por "f" o "t" por "0" o "1"
+list_BCN$host_is_superhost<- gsub("f","0",list_BCN$host_is_superhost)
+list_BCN$host_is_superhost<- gsub("t","1",list_BCN$host_is_superhost)
+list_BCN$host_is_superhost<- as.numeric(list_BCN$host_is_superhost)
+
+list_BCN$instant_bookable<- gsub("f","0",list_BCN$instant_bookable)
+list_BCN$instant_bookable<- gsub("t","1",list_BCN$instant_bookable)
+list_BCN$instant_bookable<- as.numeric(list_BCN$instant_bookable)
+
+list_BCN$has_availability<- gsub("f","0",list_BCN$has_availability)
+list_BCN$has_availability<- gsub("t","1",list_BCN$has_availability)
+list_BCN$has_availability<- as.numeric(list_BCN$has_availability)
+
+list_BCN$host_identity_verified<- gsub("f","0",list_BCN$host_identity_verified)
+list_BCN$host_identity_verified<- gsub("t","1",list_BCN$host_identity_verified)
+list_BCN$host_identity_verified<- as.numeric(list_BCN$host_identity_verified)
+
+list_BCN$host_has_profile_pic<- gsub("f","0",list_BCN$host_has_profile_pic)
+list_BCN$host_has_profile_pic<- gsub("t","1",list_BCN$host_has_profile_pic)
+list_BCN$host_has_profile_pic<- as.numeric(list_BCN$host_has_profile_pic)
+
+cal_BCN$available<- gsub("f","0",cal_BCN$available)
+cal_BCN$available<- gsub("t","1",cal_BCN$available)
+cal_BCN$available<- as.numeric(cal_BCN$available)
+
+# elimino las variables "N A" por "" y despues defino estas variables que representan porcentajes como numéricas
+list_BCN$host_acceptance_rate<- gsub("N A", "", list_BCN$host_acceptance_rate)
+list_BCN$host_response_rate<- gsub("N A", "", list_BCN$host_response_rate)
+
+list_BCN$host_response_rate<- as.numeric(list_BCN$host_response_rate)
+list_BCN$host_acceptance_rate<- as.numeric(list_BCN$host_acceptance_rate)
+
+# Redefinimos la variable "1 bath" a 1
+list_BCN$bathrooms_text<-gsub("[[:alpha:]]", " ",list_BCN$bathrooms_text)
+list_BCN$bathrooms_text<-as.numeric(list_BCN$bathrooms_text)
+
+str(cal_BCN)
+str(rev_BCN)
+str(list_BCN)
+
+```
+
+```{r csv Valencia, eval=FALSE}
+
+cal_VAL<-read.csv2("data/Valencia/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_VAL<- read.csv2("data/Valencia/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_VAL<-read.csv2("data/Valencia/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+# definimos como as.date la columna $date de los tres data frame
+
+cal_VAL$date<-as.Date(cal_VAL$date)
+rev_VAL$date<- as.Date(rev_VAL$date)
+list_VAL$last_review<- as.Date(list_VAL$last_review)
+list_VAL$last_scraped<- as.Date(list_VAL$last_scraped)
+list_VAL$host_since<- as.Date(list_VAL$host_since)
+list_VAL$calendar_last_scraped<- as.Date(list_VAL$calendar_last_scraped)
+list_VAL$first_review<- as.Date(list_VAL$first_review)
+
+# eliminamos los simbolos no alfa-numericos de las variables de precios y que incluyen porcentajes
+
+cal_VAL$price<-gsub("[[:punct:]]", " ",cal_VAL$price)
+cal_VAL$adjusted_price<- gsub("[[:punct:]]", " ", cal_VAL$adjusted_price)
+list_VAL$price<- gsub("[[:punct:]]", " ", list_VAL$price)
+list_VAL$host_response_rate<- gsub("[[:punct:]]", " ", list_VAL$host_response_rate)
+list_VAL$host_acceptance_rate<- gsub("[[:punct:]]", " ", list_VAL$host_acceptance_rate)
+# eliminamos los dos ultimos 0's de las variables de precios
+cal_VAL$price<- substr(cal_VAL$price,1,nchar(cal_VAL$price)-2)
+cal_VAL$adjusted_price<- substr(cal_VAL$adjusted_price,1,nchar(cal_VAL$adjusted_price)-2)
+list_VAL$price<- substr(list_VAL$price,1,nchar(list_VAL$price)-2)
+
+#ahora las pasamos de caracter a numericas
+cal_VAL$price<- as.numeric(cal_VAL$price) ############ CUIDADO : Warning: NAs introduced by coercion // pero a simple vista por lo general creo que bien ###########
+cal_VAL$adjusted_price<- as.numeric(cal_VAL$adjusted_price) ############ CUIDADO : Warning: NAs introduced by coercion
+list_VAL$price<- as.numeric(list_VAL$price)
+
+#cambiamos las variables definidas por "f" o "t" por "0" o "1"
+list_VAL$host_is_superhost<- gsub("f","0",list_VAL$host_is_superhost)
+list_VAL$host_is_superhost<- gsub("t","1",list_VAL$host_is_superhost)
+list_VAL$host_is_superhost<- as.numeric(list_VAL$host_is_superhost)
+
+list_VAL$instant_bookable<- gsub("f","0",list_VAL$instant_bookable)
+list_VAL$instant_bookable<- gsub("t","1",list_VAL$instant_bookable)
+list_VAL$instant_bookable<- as.numeric(list_VAL$instant_bookable)
+
+list_VAL$has_availability<- gsub("f","0",list_VAL$has_availability)
+list_VAL$has_availability<- gsub("t","1",list_VAL$has_availability)
+list_VAL$has_availability<- as.numeric(list_VAL$has_availability)
+
+list_VAL$host_identity_verified<- gsub("f","0",list_VAL$host_identity_verified)
+list_VAL$host_identity_verified<- gsub("t","1",list_VAL$host_identity_verified)
+list_VAL$host_identity_verified<- as.numeric(list_VAL$host_identity_verified)
+
+list_VAL$host_has_profile_pic<- gsub("f","0",list_VAL$host_has_profile_pic)
+list_VAL$host_has_profile_pic<- gsub("t","1",list_VAL$host_has_profile_pic)
+list_VAL$host_has_profile_pic<- as.numeric(list_VAL$host_has_profile_pic)
+
+cal_VAL$available<- gsub("f","0",cal_VAL$available)
+cal_VAL$available<- gsub("t","1",cal_VAL$available)
+cal_VAL$available<- as.numeric(cal_VAL$available)
+
+# elimino las variables "N A" por "" y despues defino estas variables que representan porcentajes como numéricas
+list_VAL$host_acceptance_rate<- gsub("N A", "", list_VAL$host_acceptance_rate)
+list_VAL$host_response_rate<- gsub("N A", "", list_VAL$host_response_rate)
+
+list_VAL$host_response_rate<- as.numeric(list_VAL$host_response_rate)
+list_VAL$host_acceptance_rate<- as.numeric(list_VAL$host_acceptance_rate)
+
+# Redefinimos la variable "1 bath" a 1
+list_VAL$bathrooms_text<-gsub("[[:alpha:]]", " ",list_VAL$bathrooms_text)
+list_VAL$bathrooms_text<-as.numeric(list_VAL$bathrooms_text)
+
+str(list_VAL)
+str(rev_VAL) 
+str(cal_VAL)
+
+```
+
+
