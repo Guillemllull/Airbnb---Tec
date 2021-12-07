@@ -7,11 +7,6 @@ output: html_document
 
 #### *Abrimos los csv's para modificarlos, también generamos una copia del original para comprobar resultados*
 
-```{r}
-sadmsÑdcas
-```
-
-
 ```{r csv's Originales}
 Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
 Original_rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
@@ -24,8 +19,17 @@ Original_list_BCN<-read.csv2("data/Barcelona/listings.csv.gz", header = TRUE, se
 Original_cal_VAL<-read.csv2("data/Valencia/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
 Original_rev_VAL<- read.csv2("data/Valencia/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
 Original_list_VAL<-read.csv2("data/Valencia/listings.csv.gz", header = TRUE, sep = ",", dec=".")
-```
 
+Original_cal_MUN<-read.csv2("data/Munich/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_MUN<- read.csv2("data/Munich/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_MUN<-read.csv2("data/Munich/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_BER<-read.csv2("data/Berlin/Berlin_calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_BER<- read.csv2("data/Berlin/Berlin_reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_BER<-read.csv2("data/Berlin/Berlin_listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+```
+  
 
 ```{r csv Mallorca, eval=FALSE}
 
@@ -251,4 +255,52 @@ str(cal_VAL)
 
 ```
 
+
+```{r Unimos los data.frames}
+
+# Unimos en un mismo data.frame los listings de las tres ciudades
+list_BCN$Ciudad=rep("Barcelona", times=nrow(list_BCN))
+list_MLL$Ciudad=rep("Mallorca", times=nrow(list_MLL))
+list_VAL$Ciudad=rep("Valencia", times=nrow(list_VAL))
+
+# Unir los tres dataframes de lisitngs
+library(tidyverse)
+(list_BCN) %>%
+  union_all(list_MLL) %>%
+  union_all(list_VAL) -> conjunto_list
+str(conjunto_list)
+
+# Variables que devuelven listas 
+head(conjunto_list$host_verifications)
+head(conjunto_list$amenities)
+
+# Unimos en un mismo data.frame las reviews de las tres ciudades
+rev_BCN$Ciudad=rep("Barcelona", times=nrow(rev_BCN))
+rev_MLL$Ciudad=rep("Mallorca", times=nrow(rev_MLL))
+rev_VAL$Ciudad=rep("Valencia", times=nrow(rev_VAL))
+
+# Unir los tres dataframes de lisitngs
+
+(rev_BCN) %>%
+  union_all(rev_MLL) %>%
+  union_all(rev_VAL) -> conjunto_rev
+str(conjunto_rev)
+
+# Unimos en un mismo data.frame los calendar de las tres ciudades
+cal_BCN$Ciudad=rep("Barcelona", times=nrow(cal_BCN))
+calender_MLL$Ciudad=rep("Mallorca", times=nrow(calender_MLL))
+cal_VAL$Ciudad=rep("Valencia", times=nrow(cal_VAL))
+
+# Unir los tres dataframes de lisitngs
+library(tidyverse)
+(cal_BCN) %>%
+  union_all(calender_MLL) %>%
+  union_all(cal_VAL) -> conjunto_cal
+str(conjunto_cal)
+
+```
+
+```{r}
+
+```
 
