@@ -1,0 +1,165 @@
+---
+title: "Airbnb_1_1"
+author: "Guillem Llull, Kelly"
+date: "25/11/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#### *Abrimos los csv's para modificarlos, también generamos una copia del original para comprobar resultados*
+
+```{r csv Originales}
+Original_cal_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_MLL<-read.csv2("data/Mallorca/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_BCN<-read.csv2("data/Barcelona/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_BCN<- read.csv2("data/Barcelona/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_BCN<-read.csv2("data/Barcelona/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_VAL<-read.csv2("data/Valencia/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_VAL<- read.csv2("data/Valencia/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_VAL<-read.csv2("data/Valencia/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+Original_cal_BER<-read.csv2("data/Berlin/Berlin_calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_rev_BER<- read.csv2("data/Berlin/Berlin_reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+Original_list_BER<-read.csv2("data/Berlin/Berlin_listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+```
+
+```{r csv con los que trabajamos}
+calender_MLL<-read.csv2("data/Mallorca/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_MLL<- read.csv2("data/Mallorca/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_MLL<-read.csv2("data/Mallorca/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+cal_BCN<-read.csv2("data/Barcelona/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_BCN<- read.csv2("data/Barcelona/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_BCN<-read.csv2("data/Barcelona/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+cal_VAL<-read.csv2("data/Valencia/calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_VAL<- read.csv2("data/Valencia/reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_VAL<-read.csv2("data/Valencia/listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+cal_BER<-read.csv2("data/Berlin/Berlin_calendar.csv.gz", header = TRUE, sep = ",", dec = ".")
+rev_BER<- read.csv2("data/Berlin/Berlin_reviews.csv.gz", header = TRUE, sep = ",", dec = ".")
+list_BER<-read.csv2("data/Berlin/Berlin_listings.csv.gz", header = TRUE, sep = ",", dec=".")
+
+```
+
+```{r librerias}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r Unimos los dataframes}
+
+# Unimos en un mismo data.frame los listings de las tres ciudades
+list_BCN$Ciudad=rep("Barcelona", times=nrow(list_BCN))
+list_MLL$Ciudad=rep("Mallorca", times=nrow(list_MLL))
+list_VAL$Ciudad=rep("Valencia", times=nrow(list_VAL))
+list_BER$Ciudad=rep("Berlin", times=nrow(list_BER))
+
+# Unir los tres dataframes de lisitngs
+(list_BCN) %>%
+  union_all(list_BER) %>%
+  union_all(list_MLL) %>%
+  union_all(list_VAL) -> conjunto_list
+
+# Unimos en un mismo data.frame las reviews de las tres ciudades
+rev_BCN$Ciudad=rep("Barcelona", times=nrow(rev_BCN))
+rev_MLL$Ciudad=rep("Mallorca", times=nrow(rev_MLL))
+rev_VAL$Ciudad=rep("Valencia", times=nrow(rev_VAL))
+rev_BER$Ciudad=rep("Berlin", times=nrow(rev_BER))
+
+# Unir los tres dataframes de lisitngs
+(rev_BCN) %>%
+  union_all(rev_BER) %>%
+  union_all(rev_MLL) %>%
+  union_all(rev_VAL) -> conjunto_rev
+
+# Unimos en un mismo data.frame los calendar de las tres ciudades
+cal_BCN$Ciudad=rep("Barcelona", times=nrow(cal_BCN))
+calender_MLL$Ciudad=rep("Mallorca", times=nrow(calender_MLL))
+cal_VAL$Ciudad=rep("Valencia", times=nrow(cal_VAL))
+cal_BER$Ciudad=rep("Berlin", times=nrow(cal_BER))
+
+# Unir los tres dataframes de lisitngs
+(cal_BCN) %>%
+  union_all(cal_BER) %>%
+  union_all(calender_MLL) %>%
+  union_all(cal_VAL) -> conjunto_cal
+
+```
+
+```{r}
+# definimos como as.date la columna $date de los tres data frame
+conjunto_cal$date<-as.Date(conjunto_cal$date)
+conjunto_rev$date<- as.Date(conjunto_rev$date)
+conjunto_list$last_review<- as.Date(conjunto_list$last_review)
+conjunto_list$last_scraped<- as.Date(conjunto_list$last_scraped)
+conjunto_list$host_since<- as.Date(conjunto_list$host_since)
+conjunto_list$calendar_last_scraped<- as.Date(conjunto_list$calendar_last_scraped)
+conjunto_list$first_review<- as.Date(conjunto_list$first_review)
+
+# eliminamos los simbolos no alfa-numericos de las variables de precios y que incluyen porcentajes
+conjunto_cal$price<-gsub("[[:punct:]]", " ",conjunto_cal$price)
+conjunto_cal$adjusted_price<- gsub("[[:punct:]]", " ", conjunto_cal$adjusted_price)
+conjunto_list$price<- gsub("[[:punct:]]", " ", conjunto_list$price)
+conjunto_list$host_response_rate<- gsub("[[:punct:]]", " ", conjunto_list$host_response_rate)
+conjunto_list$host_acceptance_rate<- gsub("[[:punct:]]", " ", conjunto_list$host_acceptance_rate)
+# eliminamos los dos ultimos 0's de las variables de precios
+conjunto_cal$price<- substr(conjunto_cal$price,1,nchar(conjunto_cal$price)-2)
+conjunto_cal$adjusted_price<- substr(conjunto_cal$adjusted_price,1,nchar(conjunto_cal$adjusted_price)-2)
+conjunto_list$price<- substr(conjunto_list$price,1,nchar(conjunto_list$price)-2)
+
+#ahora las pasamos de caracter a numericas
+conjunto_cal$price<- as.numeric(conjunto_cal$price) ############ CUIDADO : Warning: NAs introduced by coercion // pero a simple vista por lo general creo que bien ###########
+conjunto_cal$adjusted_price<- as.numeric(conjunto_cal$adjusted_price) ############ CUIDADO : Warning: NAs introduced by coercion
+conjunto_list$price<- as.numeric(conjunto_list$price)
+
+#cambiamos las variables definidas por "f" o "t" por "0" o "1"
+conjunto_list$host_is_superhost<- gsub("f","0",conjunto_list$host_is_superhost)
+conjunto_list$host_is_superhost<- gsub("t","1",conjunto_list$host_is_superhost)
+conjunto_list$host_is_superhost<- as.numeric(conjunto_list$host_is_superhost)
+
+conjunto_list$instant_bookable<- gsub("f","0",conjunto_list$instant_bookable)
+conjunto_list$instant_bookable<- gsub("t","1",conjunto_list$instant_bookable)
+conjunto_list$instant_bookable<- as.numeric(conjunto_list$instant_bookable)
+
+conjunto_list$has_availability<- gsub("f","0",conjunto_list$has_availability)
+conjunto_list$has_availability<- gsub("t","1",conjunto_list$has_availability)
+conjunto_list$has_availability<- as.numeric(conjunto_list$has_availability)
+
+conjunto_list$host_identity_verified<- gsub("f","0",conjunto_list$host_identity_verified)
+conjunto_list$host_identity_verified<- gsub("t","1",conjunto_list$host_identity_verified)
+conjunto_list$host_identity_verified<- as.numeric(conjunto_list$host_identity_verified)
+
+conjunto_list$host_has_profile_pic<- gsub("f","0",conjunto_list$host_has_profile_pic)
+conjunto_list$host_has_profile_pic<- gsub("t","1",conjunto_list$host_has_profile_pic)
+conjunto_list$host_has_profile_pic<- as.numeric(conjunto_list$host_has_profile_pic)
+
+conjunto_cal$available<- gsub("f","0",conjunto_cal$available)
+conjunto_cal$available<- gsub("t","1",conjunto_cal$available)
+conjunto_cal$available<- as.numeric(conjunto_cal$available)
+
+# elimino las variables "N A" por "" y despues defino estas variables que representan porcentajes como numéricas
+conjunto_list$host_acceptance_rate<- gsub("N A", "", conjunto_list$host_acceptance_rate)
+conjunto_list$host_response_rate<- gsub("N A", "", conjunto_list$host_response_rate)
+
+conjunto_list$host_response_rate<- as.numeric(conjunto_list$host_response_rate)
+conjunto_list$host_acceptance_rate<- as.numeric(conjunto_list$host_acceptance_rate)
+
+# Redefinimos la variable "1 bath" a 1
+conjunto_list$bathrooms_text<-gsub("[[:alpha:]]", " ",conjunto_list$bathrooms_text)
+conjunto_list$bathrooms_text<-as.numeric(conjunto_list$bathrooms_text)
+
+```
+
+```{r}
+# Variables que devuelven listas 
+# head(conjunto_list$host_verifications)
+# head(conjunto_list$amenities)
+```
+
